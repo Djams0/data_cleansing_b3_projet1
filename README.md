@@ -16,25 +16,27 @@ Ce document sert de **README principal** et contient :
 ## Arborescence recommandée (à committer)
 
 ```
-data-quality-project/
-├── data/
-│   ├── raw/
-│   │   ├── clients.csv
-│   │   ├── produits.csv
-│   │   └── ventes.csv
-│   ├── clean/
-│   │   ├── clients_clean.csv
-│   │   ├── produits_clean.csv
-│   │   └── ventes_clean.csv
-│   └── reports/
-│       ├── kpi_quality_before_after.csv
-│       └── daily_revenue.csv
+data_cleansing_b3_projet1/
+│── clean/
+│   ├── clients_clean.csv
+│   ├── produits_clean.csv
+│   ├── refunds.csv
+│   └── sales_clean.csv
+├── raw/
+│   ├── catalog_fr.csv
+│   ├── catalog_us.csv
+│   ├── clients.csv
+│   ├── mapping_categories.csv
+│   └── sales.csv
+│── reports/
+│   ├── daily_revenue.csv
+│   ├── kpi_quality.csv
+│   └── sales_kpi.csv
 ├── src/
 │   ├── pipeline.py
-│   ├── utils_cleaning.py
 │   ├── clients_pipeline.py
 │   ├── produits_pipeline.py
-│   └── ventes_pipeline.py
+│   └── sales_pipeline.py
 ├── docs/
 │   ├── data_dictionary.md
 │   └── transformation_log.md
