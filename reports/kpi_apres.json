@@ -1,0 +1,14 @@
+{
+    "completeness_per_column": {
+        "id": 0.0,
+        "nom": 0.0,
+        "prenom": 0.0,
+        "email": 0.12,
+        "telephone": 9.81,
+        "pays": 0.0,
+        "naissance": 0.0,
+        "completude": 0.0
+    },
+    "global_completeness_rate": 98.76,
+    "duplicate_rate": 0.0
+}
