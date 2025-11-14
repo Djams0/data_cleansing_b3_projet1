@@ -1,0 +1,3 @@
+,completeness_per_column,global_completeness_rate,duplicate_rate
+Avant,"{'id': 0.0, 'nom': 0.0, 'prenom': 0.0, 'email': 5.01, 'telephone': 9.81, 'pays': 0.0, 'naissance': 0.0}",97.88,0.0
+Apres,"{'id': 0.0, 'nom': 0.0, 'prenom': 0.0, 'email': 0.0, 'telephone': 0.0, 'pays': 0.0, 'naissance': 0.0, 'completude': 0.0}",100.0,0.0

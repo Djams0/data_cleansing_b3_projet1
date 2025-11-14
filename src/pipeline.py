@@ -1,115 +1,86 @@
 import pandas as pd
-import numpy as np
-import re
-import json
+from clients_pipeline import *
+from sales_pipeline import *
 
-#emails
-def standariser_email(email):
-
-    if not isinstance(email, str):
-        return None
-
-    email = email.strip().lower()
-
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        return None
-    return email
-
-#pays
-def standariser_pays(pays):
-
-    if not isinstance(pays, str):
-        return None
-
-    pays = pays.strip().lower()
-
-    pays_map = {
-    "france": "France",
-    "fr": "France",
-    "allemagne": "Allemagne",
-    "germany": "Allemagne",
-    "etats-unis": "États-Unis",
-    "usa": "États-Unis",
-    "united states": "États-Unis",
-    "royaume-uni": "Royaume-Uni",
-    "uk": "Royaume-Uni",
-    "united kingdom": "Royaume-Uni",
-    "ch": "Chine",
-    "be": "Belgique"
-    }
-    return pays_map.get(pays, pays.capitalize())
-
-#téléphones
-def standariser_telephone(telephone):
-
-    if not isinstance(telephone, str):
-        return None
-
-    telephone_clean = re.sub(r'\D', '', telephone)
-
-    if len(telephone_clean) == 9 and telephone_clean.startswith('0'):
-        telephone_clean = '33' + telephone_clean[1:]
-    elif len(telephone_clean) == 10 and telephone_clean.startswith('0'):
-       telephone_clean = '33' + telephone_clean[1:]
-    elif len(telephone_clean) == 11 and telephone_clean.startswith('33'):
-        pass
-    else:
-        return None
-    return f"+{telephone_clean}"
-
-#kpi
-def kpi_quality(df):
-
-    quality_metrics = {}
-
-    # Calcul du taux de complétude par colonne
-    completeness_by_column = (df.isnull().sum() / len(df) * 100).round(2)
-    quality_metrics['completeness_per_column'] = completeness_by_column.to_dict()
-
-    # Calcul du taux de complétude global
-    total_missing = df.isnull().sum().sum()
-    total_cells = df.size
-    global_completeness_rate = (1 - (total_missing / total_cells)) * 100
-    quality_metrics['global_completeness_rate'] = round(global_completeness_rate, 2)
-
-    # Calcul du taux de doublons
-    num_duplicates = df.duplicated().sum()
-    duplicate_rate = (num_duplicates / len(df) * 100).round(2)
-    quality_metrics['duplicate_rate'] = duplicate_rate
-    return quality_metrics
-
-def main():
+# fonctions clients
+def clients_clean():
     #charger le fichier
-    df = pd.read_csv("./raw/clients.csv", dtype={"telephone": str})
-
+    clients_clean = pd.read_csv("./raw/clients.csv", dtype={"telephone": str})
+    
     #kpi avant
-    kpi_avant = kpi_quality(df)
-    with open("./reports/kpi_avant.json", "w") as f:
-        json.dump(kpi_avant, f, indent=4)
-
+    kpi_avant = kpi_quality(clients_clean)
+    
     #standariser
-    df["email"] = df["email"].apply(standariser_email)
-    df["pays"] = df["pays"].apply(standariser_pays)
-    df["telephone"] = df["telephone"].apply(standariser_telephone)
+    clients_clean["email"] = clients_clean["email"].apply(standariser_email)
+    clients_clean["pays"] = clients_clean["pays"].apply(standariser_pays)
+    clients_clean["telephone"] = clients_clean["telephone"].apply(standariser_telephone)
 
     #date
-    if "naissance" in df.columns:
-        df['naissance'] = pd.to_datetime(
-            df['naissance'], errors='coerce'
+    if "naissance" in clients_clean.columns:
+        clients_clean['naissance'] = pd.to_datetime(
+            clients_clean['naissance'], errors='coerce'
         )
+    
+    #supprimer les commandes sans date et sans email
+    clients_clean = clients_clean.dropna(subset=['email','telephone'])
 
     #supprimer les doublons
-    df['completude'] = df[['email','telephone','pays','naissance']].notna().sum(axis=1)
-    df = df.sort_values('completude',ascending=False)
-    df = df.drop_duplicates(subset=['nom','prenom','email'])
+    clients_clean['completude'] = clients_clean[['email','telephone','pays','naissance']].notna().sum(axis=1)
+    clients_clean = clients_clean.sort_values('completude',ascending=False)
+    clients_clean = clients_clean.drop_duplicates(subset=['nom','prenom','email'])
     
     #kpi apres
-    kpi_apres = kpi_quality(df)
-    with open("./reports/kpi_apres.json", "w") as f:
-        json.dump(kpi_apres, f, indent=4)
+    kpi_apres = kpi_quality(clients_clean)
+    
+    #Sauvegarde du kpi
+    clients_kpi = pd.DataFrame([kpi_avant, kpi_apres], index=['Avant', 'Apres'])
+    clients_kpi.to_csv('./reports/kpi_qualite.csv')
 
-    #Enregistre le fichier clean
-    df.to_csv("./clean/clients_clean.csv", index=False)
-    return df
+    #Sauvegarde du fichier clean
+    clients_clean.to_csv("./clean/clients_clean.csv", index=False)
+    return clients_clean
 
-df_clean = main()
+# fonctiosn sales et refunds
+def sales_clean():
+
+    #charger le fichier
+    sales_clean = pd.read_csv("./raw/sales.csv")
+
+    #kpi avant
+    kpi_avant = kpi_quality(sales_clean) 
+
+    #date au format ISO
+    sales_clean["order_date"] = sales_clean["order_date"].apply(normaliser_date)
+
+    #montant positifs
+    sales_clean["amount"] = sales_clean["amount"].apply(normaliser_amount)
+    print((sales_clean['amount'] > 0).sum())
+
+    # Standardiser devise
+    sales_clean['currency'] = sales_clean['currency'].replace({'€':'EUR'}).fillna('EUR')
+    
+    #separations
+    remboursement = sales_clean[sales_clean["amount"] < 0].copy()
+    sales_clean = sales_clean[sales_clean["amount"] >= 0].copy()
+
+    #supprimer les doublons
+    sales_clean = sales_clean.sort_values('amount', ascending=False).drop_duplicates(subset=['order_id','customer_email'])
+    
+    #supprimer les commandes sans date et sans email
+    sales_clean = sales_clean.dropna(subset=['order_date','customer_email'])
+
+    #kpi apres
+    kpi_apres = kpi_quality(sales_clean)
+
+    #Sauvegarde du kpi
+    sales_kpi = pd.DataFrame([kpi_avant, kpi_apres], index=['Avant', 'Apres'])
+    sales_kpi.to_csv("./reports/sales_kpi.csv", index=False)
+    
+    #Sauvegarde du fichier clean et remboursement
+    sales_clean.to_csv("./clean/sales_clean.csv", index=False)
+    remboursement.to_csv("./clean/refunds.csv", index=False)
+
+    return sales_clean
+
+df_clean = clients_clean()
+df_clean = sales_clean()
