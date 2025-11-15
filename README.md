@@ -93,8 +93,6 @@ python src/pipeline.py
 
 ## Tests automatisés
 
-Si vous avez installé **pytest**, vous pouvez lancer les tests :
-
 ```bash
 pytest -v tests/
 ```
