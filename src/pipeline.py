@@ -26,7 +26,7 @@ def clients_clean():
             clients_clean['naissance'], errors='coerce'
         )
     
-    print("Dates invalides :", clients_clean['naissance_clean'].isna().sum())
+    print("Dates invalides :", clients_clean['naissance'].isna().sum())
 
     # Supprimer les clients sans email et sans téléphone
     clients_clean = clients_clean[clients_clean['email_clean'].notna() | clients_clean['telephone_clean'].notna()]
@@ -68,9 +68,10 @@ def sales_clean():
     sales_clean["order_date_clean"] = sales_clean["order_date"].apply(standariser_date)
     # Vérifier que les montants sont positifs
     sales_clean["amount_clean"] = sales_clean["amount"].apply(standariser_amount)
-    sales_clean['currency_clean'] = sales_clean['currency'].replace({'€':'EUR'}).fillna('EUR')
-    
-    print("Dates invalides :", sales_clean["order_date_clean"].isna().sum())
+    sales_clean['currency_clean'] = sales_clean['currency'].replace({'€':'EUR'})
+
+    print("Devise en € :", (sales_clean['currency'] == '€').sum())
+    print("Dates invalides :", sales_clean["order_date"].isna().sum())
   
     # Supprimer les doublons (order_id + email client) en gardant les plus grosses ventes
     sales_clean = sales_clean.sort_values('amount_clean', ascending=False).drop_duplicates(subset=['order_id','customer_email'])
@@ -81,6 +82,7 @@ def sales_clean():
     # Séparer les remboursements et ventes
     remboursement = sales_clean[sales_clean["amount_clean"] < 0].copy()
     sales_clean = sales_clean[sales_clean["amount_clean"] >= 0].copy()
+
     print("Montants positif :", len(sales_clean))
     print("Montants négatif :", len(remboursement))
      
