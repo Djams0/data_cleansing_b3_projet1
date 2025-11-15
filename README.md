@@ -1,25 +1,28 @@
 # Projet : Qualité et Nettoyage des Données — Repo Git
 
-Ce document sert de **README principal** et contient :
+Ce dépôt fournit un **processus reproductible pour nettoyer et contrôler la qualité** de trois jeux de données : *clients*, *produits*, *ventes*.  
 
-* structure recommandée du dépôt Git
-* fichiers et modèles de code (extraits)
-* instructions d'exécution
-* dictionnaire de données (template)
-* journal de transformation (template)
-* guide pour le tableau de bord KPI
-
-> **But du dépôt** : fournir un processus reproductible pour nettoyer et contrôler la qualité de trois jeux de données : *clients*, *produits*, *ventes*. Livrables : code, raw/, clean/, reports/, README.md, dictionnaire, journal, dashboard.
+Il contient le code Python, les jeux de données bruts, les sorties nettoyées, les KPI et rapports, ainsi que la documentation complète (dictionnaire des données et journal de transformation).
 
 ---
 
-## Arborescence
+## Objectifs du projet
+
+1. **Nettoyage des données** : identifier et corriger les anomalies, doublons et valeurs manquantes.  
+2. **Création de jeux de données canoniques** pour analyses ultérieures.  
+3. **Calcul et export des KPI** pour le suivi des ventes, clients et catalogue produits.  
+4. **Documentation complète** : dictionnaire des données et journal des transformations appliquées.
+
+---
+
+## Arborescence du dépôt
 
 ```
+
 data_cleansing_b3_projet1/
 │── clean/
 │   ├── clients_clean.csv
-│   ├── produits_clean.csv
+│   ├── catalog_canonique.csv
 │   ├── refunds.csv
 │   └── sales_clean.csv
 ├── raw/
@@ -28,51 +31,97 @@ data_cleansing_b3_projet1/
 │   ├── clients.csv
 │   ├── mapping_categories.csv
 │   └── sales.csv
-│── reports/
-│   ├── daily_revenue.csv
-│   ├── kpi_quality.csv
+├── reports/
+│   ├── anomalies_catalog.csv
+│   ├── anomalies_clients.csv
+│   ├── anomalies_sales.csv
+│   ├── catalog_kpi.csv
+│   ├── clients_kpi.csv
+│   ├── ventes_kpi_journalier.csv
 │   └── sales_kpi.csv
 ├── src/
 │   ├── pipeline.py
 │   ├── clients_pipeline.py
-│   ├── produits_pipeline.py
+│   ├── catalog_pipeline.py
+│   ├── utils_cleaning.py
+│   ├── utils_kpi.py
 │   └── sales_pipeline.py
-├── docs/
-│   ├── dictionnaire.md
-│   └── journal_transformation.md
-├── dashboards/
-│   └── kpi_dashboard.pbix (Power BI) or notebooks for matplotlib
+├── data_dictionary.md
+├── transformation_log.md
 ├── requirements.txt
 └── README.md
-```
+
+````
 
 ---
 
+## Prérequis
 
-## Rédaction du rendu à remettre (checklist)
-
-* [ ] `src/` : code propre, functions réutilisables
-* [ ] `raw/` : jeux d'origine (CSV)
-* [ ] `clean/` : sorties nettoyées
-* [ ] `reports/` : KPI et rapports
-* [ ] `docs/data_dictionary.md` complété
-* [ ] `docs/transformation_log.md` complété
-* [ ] `README.md` (mode d'emploi) — ce document
-* [ ] Optionnel : notebooks et dashboard
+- Python 3.10+  
+- pip installé  
+- Windows, Mac ou Linux
 
 ---
 
-## Commandes d'exécution rapides
+## Installation
 
 ```bash
-# créer venv
+# créer un environnement virtuel
 python -m venv .venv
-source .venv/bin/activate  # ou .venv\Scripts\activate sur Windows
+# activer l'environnement
+source .venv/bin/activate  # Mac/Linux
+.venv\Scripts\activate     # Windows
+# installer les dépendances
 pip install -r requirements.txt
+````
 
-# lancer le pipeline principal
+---
+
+## Exécution du pipeline
+
+Le pipeline principal nettoie les données et génère les rapports :
+
+```bash
 python src/pipeline.py
-
-# lancer pipeline clients séparément
-python src/clients_pipeline.py
 ```
+
+**Options :**
+
+* Chaque module (`clients_pipeline.py`, `catalog_pipeline.py`, `sales_pipeline.py`) peut être exécuté individuellement pour tester une partie du pipeline.
+
+---
+
+## Tests automatisés
+
+Si vous avez installé **pytest**, vous pouvez lancer les tests :
+
+```bash
+pytest -v tests/
+```
+ou
+```bash
+C:\Python313\python.exe -m pytest -v
+```
+
+* `test_cleaning.py` : vérifie la qualité et l’intégrité des données nettoyées
+* `test_kpi.py` : vérifie le calcul correct des KPI
+
+---
+
+## Livrables attendus
+
+1. `clean/` : jeux de données nettoyés
+2. `reports/` : anomalies et KPI
+3. `data_dictionary.md` : dictionnaire des colonnes et types
+4. `transformation_log.md` : journal des modifications appliquées
+5. `src/` : code Python réutilisable
+
+---
+
+
+## Auteur
+
+* menbres du groupe : **NDIAYE Mansour Djamil** & **ABDILLAHI ABDI Mariam Marwo**
+* Email : [[mansourdjamil14@gmail.com](mailto:mansourdjamil14@gmail.com)]
+* Projet réalisé dans le cadre de : **B3 — Data Quality & Cleaning**
+
