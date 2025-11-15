@@ -24,7 +24,7 @@
 | customer_email | string | Email du client nettoyé et validé | Emails invalides supprimés                 |
 | order_date_clean| date   | Date normalisée (ISO AAAA-MM-JJ)  | -                                          |
 | amount_clean   | float  | Montant nettoyé                   | Montants négatifs séparés dans refunds.csv |
-| currency_clean | string | Devise                            | € → EUR, valeurs manquantes → EUR          |
+| currency_clean | string | Devise                            | € → EUR                                    |
 | channel        | string | Canal de vente                    | -                                          |
 
 
