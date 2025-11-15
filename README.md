@@ -13,7 +13,7 @@ Ce document sert de **README principal** et contient :
 
 ---
 
-## Arborescence recommandée (à committer)
+## Arborescence
 
 ```
 data_cleansing_b3_projet1/

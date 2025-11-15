@@ -1,87 +1,52 @@
-# Importation des bibliothèques
+# src/clients_pipeline.py
+"""
+Pipeline de nettoyage pour clients.
+Utilise utils_cleaning et utils_kpi.
+"""
+
 import pandas as pd
-import numpy as np
-import re
+from utils_cleaning import normalize_email, normalize_country, normalize_phone_fr, safe_to_datetime
+from utils_kpi import kpi_quality, kpi_dicts_to_dataframe
 
-# Fonction pour nettoyer les emails
-def standariser_email(email):
-
-    # Vérifie si la variable est une chaîne de caractères
-    if not isinstance(email, str):
-        return None
+def clients_clean(input_path="./raw/clients.csv", output_clean="./clean/clients_clean.csv", reports_dir="./reports/"):
+    df = pd.read_csv(input_path, dtype=str)
     
-    # Supprime les espaces avant/après et met tous les caractères en minuscules
-    email = email.strip().lower()
-    
-    # Vérifie si l'email est au bon format
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        return None
-    return email
+    # KPI avant
+    kpi_before = kpi_quality(df)
 
-# Fonction pour uniformiser les pays
-def standariser_pays(pays):
+    # Nettoyages
+    df['email_clean'] = df.get('email').apply(normalize_email)
+    df['pays_clean'] = df.get('pays').apply(normalize_country)
+    df['telephone_clean'] = df.get('telephone').apply(normalize_phone_fr)
+    if 'naissance' in df.columns:
+        df['naissance_clean'] = df['naissance'].apply(safe_to_datetime)
 
-    # Vérifie si la variable est une chaîne de caractères
-    if not isinstance(pays, str):
-        return None
-    
-    # Supprime les espaces avant/après et met tous les caractères en minuscules
-    pays = pays.strip().lower()
+    # Indicateurs / anomalies
+    anomalies = df[
+        df['email_clean'].isna() & df['telephone_clean'].isna()
+    ].copy()
+    anomalies.to_csv(f"{reports_dir}anomalies_clients.csv", index=False)
 
-    # Dictionnaire de correspondance pour les variations courantes
-    pays_map = {
-    "france": "France",
-    "fr": "France",
-    "allemagne": "Allemagne",
-    "germany": "Allemagne",
-    "etats-unis": "États-Unis",
-    "usa": "États-Unis",
-    "united states": "États-Unis",
-    "royaume-uni": "Royaume-Uni",
-    "uk": "Royaume-Uni",
-    "united kingdom": "Royaume-Uni",
-    "ch": "Chine",
-    "be": "Belgique"
-    }
-    return pays_map.get(pays, pays.capitalize())
+    # Supprimer lignes sans email ni téléphone
+    df = df[ df['email_clean'].notna() | df['telephone_clean'].notna() ].copy()
 
-# Fonction pour mettre les numéros de téléphone en format international
-def standariser_telephone(telephone):
+    # Complétude et fusion doublons (garder la ligne la plus complète)
+    df['completude'] = df[['email_clean','telephone_clean','pays_clean','naissance_clean']].notna().sum(axis=1)
+    df = df.sort_values('completude', ascending=False)
+    df = df.drop_duplicates(subset=['nom','prenom','email_clean'], keep='first')
 
-    # Vérifie si la variable est une chaîne de caractères
-    if not isinstance(telephone, str):
-        return None
+    # Colonnes finales
+    out_cols = ['id','nom','prenom','email_clean','telephone_clean','pays_clean','naissance_clean','completude']
+    for c in out_cols:
+        if c not in df.columns:
+            df[c] = None
+    df_out = df[out_cols].copy()
 
-    # Supprime tous les caractères non numériques
-    telephone_clean = re.sub(r'\D', '', telephone)
-    
-    # Vérifie la longueur standard d'un numéro français et retourne None
-    # pour numéro non reconnaissable ou invalide
-    if len(telephone_clean) in [9,10] and telephone_clean.startswith('0'):
-        telephone_clean = '33' + telephone_clean[1:]
-    elif len(telephone_clean) == 11 and telephone_clean.startswith('33'):
-        pass
-    else:
-        return None
-    return f"+{telephone_clean}"
+    # KPI après
+    kpi_after = kpi_quality(df_out)
+    kpi_df = kpi_dicts_to_dataframe(kpi_before, kpi_after)
+    kpi_df.to_csv(f"{reports_dir}clients_kpi.csv", index=False)
 
-# Fonction pour calculer les KPI
-def kpi_quality(df):
-
-    quality_metrics = {}
-
-    # Calcul du taux de complétude par colonne
-    completeness_by_column = (df.isnull().sum() / len(df) * 100).round(2)
-    quality_metrics['completude_par_colonne'] = completeness_by_column.to_dict()
-
-    # Calcul du taux de complétude global
-    total_missing = df.isnull().sum().sum()
-    total_cells = df.size
-    global_completeness_rate = (1 - (total_missing / total_cells)) * 100
-    quality_metrics['taux_completude_global'] = round(global_completeness_rate, 2)
-
-    # Calcul du taux de doublons
-    num_duplicates = df.duplicated().sum()
-    duplicate_rate = (num_duplicates / len(df) * 100).round(2)
-    quality_metrics['taux_doublons'] = duplicate_rate
-    return quality_metrics
+    # Sauvegarde
+    df_out.to_csv(output_clean, index=False)
+    return df_out

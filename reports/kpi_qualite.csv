@@ -1,3 +1,0 @@
-,completude_par_colonne,taux_completude_global,taux_doublons
-Avant,"{'id': 0.0, 'nom': 0.0, 'prenom': 0.0, 'email': 5.01, 'telephone': 9.81, 'pays': 0.0, 'naissance': 0.0}",97.88,0.0
-Apres,"{'id': 0.0, 'nom': 0.0, 'prenom': 0.0, 'email_clean': 0.12, 'telephone_clean': 9.81, 'pays_clean': 0.0, 'naissance_clean': 0.0, 'completude': 0.0}",98.76,0.0

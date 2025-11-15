@@ -1,0 +1,3 @@
+stage,num_rows,global_completeness_rate,num_duplicates,duplicate_rate_pct
+Avant,50000,97.88,0,0.0
+Apres,47553,98.76,0,0.0
