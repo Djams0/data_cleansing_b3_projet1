@@ -38,8 +38,8 @@ data_cleansing_b3_projet1/
 │   ├── produits_pipeline.py
 │   └── sales_pipeline.py
 ├── docs/
-│   ├── data_dictionary.md
-│   └── transformation_log.md
+│   ├── dictionnaire.md
+│   └── journal_transformation.md
 ├── dashboards/
 │   └── kpi_dashboard.pbix (Power BI) or notebooks for matplotlib
 ├── requirements.txt
@@ -52,9 +52,9 @@ data_cleansing_b3_projet1/
 ## Rédaction du rendu à remettre (checklist)
 
 * [ ] `src/` : code propre, functions réutilisables
-* [ ] `data/raw/` : jeux d'origine (CSV)
-* [ ] `data/clean/` : sorties nettoyées
-* [ ] `data/reports/` : KPI et rapports
+* [ ] `raw/` : jeux d'origine (CSV)
+* [ ] `clean/` : sorties nettoyées
+* [ ] `reports/` : KPI et rapports
 * [ ] `docs/data_dictionary.md` complété
 * [ ] `docs/transformation_log.md` complété
 * [ ] `README.md` (mode d'emploi) — ce document
